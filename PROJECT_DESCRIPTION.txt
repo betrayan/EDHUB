@@ -1,0 +1,507 @@
+
+================================================================================
+                                PROJECT EDHUB
+                    Comprehensive Educational Management Platform
+                                DESIGN DOCUMENT
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1.  Introduction
+2.  Project Vision & Objectives
+3.  Target Audience & User Roles
+4.  Technical Stack & Dependencies
+5.  System Architecture
+6.  Detailed Feature Request & Implementation
+    6.1. Authentication Module
+    6.2. Dashboard & Navigation
+    6.3. Academic Module
+    6.4. Campus Life Module
+    6.5. Student Services Module
+    6.6. High Authority & Administration
+    6.7. Utility Tools
+7.  Artificial Intelligence Integration
+8.  Database Design (Schema Overview)
+9.  Security Integration
+10. UI/UX Design System
+11. Installation & Setup Guide
+12. Future Roadmap
+13. Component Reference API
+14. Troubleshooting & FAQ
+15. Conclusion
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+EdHub is a state-of-the-art, integrated educational management platform designed to 
+bridge the gap between students, faculty, and administrative bodies within an 
+educational institution. It serves as a central hub for all academic and campus-related 
+activities, fostering a more connected, efficient, and digital campus environment.
+
+The project is built as a Single Page Application (SPA) using modern web technologies,
+prioritizing performance, scalability, and user experience. It leverages cloud-based
+backend services for real-time data synchronization and robust authentication.
+
+This document serves as a comprehensive guide to functionality, architecture, and 
+technical implementation of the EdHub ecosystem.
+
+================================================================================
+2. PROJECT VISION & OBJECTIVES
+================================================================================
+The primary vision of EdHub is to digitize the traditional campus experience. 
+Key objectives include:
+
+-   **Centralization**: Consolidating disparate systems (academic results, library, 
+    transport, grievances) into a single unified interface.
+-   **Transparency**: Providing real-time status updates for campus facilities 
+    (labs, library, buses) and administrative processes.
+-   **Efficiency**: Automating mundane tasks such as CGPA calculation, exam seating 
+    lookup, and timetable management.
+-   **Collaboration**: Enabling resource sharing between faculty and students and 
+    peer-to-peer interaction through marketplaces and polls.
+-   **Accessibility**: Ensuring a responsive design that works seamlessly across 
+    devices, with built-in accessibility features like dark mode.
+
+================================================================================
+3. TARGET AUDIENCE & USER ROLES
+================================================================================
+The platform is designed to cater to three distinct user roles, each with tailored 
+interfaces and permission sets:
+
+A.  **Students**
+    -   Access personal academic records and results.
+    -   View exam schedules and seating arrangements.
+    -   Participate in campus polls and events.
+    -   Report grievances and track their resolution.
+    -   Utilize study tools like the Focus Timer and AI Study Buddy.
+    -   Buy/Sell items in the Campus Marketplace.
+
+B.  **Faculty Members**
+    -   Manage academic resources and study materials.
+    -   Post assignments and track submissions.
+    -   View student details for mentorship.
+    -   Participate in departmental communications.
+
+C.  **Higher Authority / Admin**
+    -   Global oversight of the platform.
+    -   Broadcast notifications and alerts.
+    -   Manage critical datasets (Exam schedules, Campus Status).
+    -   Review and resolve escalated grievances.
+    -   Manage placement drives and recruitment data.
+
+================================================================================
+4. TECHNICAL STACK & DEPENDENCIES
+================================================================================
+The project utilizes a robust and modern technology stack to ensure performance and 
+maintainability.
+
+**Frontend Framework & Library:**
+-   **React (v18.2.0)**: The core library for building the user interface, utilizing 
+    functional components and hooks (`useState`, `useEffect`, `useContext`, `useMemo`).
+-   **Vite (v5.0.8)**: Next-generation frontend tooling, utilized for lightning-fast 
+    hot module replacement (HMR) and optimized build processes.
+    -   Command: `npm run dev` for local development.
+    -   Command: `npm run build` for production packaging.
+
+**Styling & UI:**
+-   **Tailwind CSS (v3.4.0)**: A utility-first CSS framework for rapid UI development.
+    -   Configured with `postcss` and `autoprefixer`.
+    -   Custom color palettes (`violet`, `emerald`, `amber`, `rose`, `slate`) used 
+        to denote different system states.
+    -   Responsive design modifiers (`sm:`, `md:`, `lg:`) ensure mobile compatibility.
+-   **Lucide React (v0.303.0)**: A comprehensive icon set utilized for consistent 
+    visual language across the application (e.g., `Megaphone`, `Briefcase`, `Cpu`).
+
+**Backend & Services (Serverless Architecture):**
+-   **Firebase (v10.7.1)**:
+    -   **Authentication**: Handling user sign-ups, logins, and role management. 
+        Supports Anonymous Auth and Custom Token Auth.
+    -   **Firestore Database**: A NoSQL document database for storing real-time data 
+        (users, events, exams, grievances, etc.).
+-   **Google Generative AI (@google/generative-ai v0.1.3)**:
+    -   Powered by the Gemini model.
+    -   Used for the "Jarvis" Chatbot and "AI Study Buddy" features.
+
+**Development Tools:**
+-   **ESLint**: For code quality and enforcing coding standards.
+-   **TypeScript Types**: Basic type definitions for React and DOM elements to ensure 
+    code intelligence (though the main project is in JS).
+
+================================================================================
+5. SYSTEM ARCHITECTURE
+================================================================================
+The application follows a modular, component-based architecture. 
+
+**Root Structure:**
+-   `App.jsx`: The monolithic entry point (currently) acting as the main controller. 
+    It manages global state (User Auth, Theme, Active Tab).
+-   `main.jsx`: Bootstraps the React application and mounts it to the DOM.
+-   `index.css`: Contains global styles and Tailwind directives.
+
+**State Management:**
+-   React's built-in Context API and local state (`useState`) are used.
+-   Firebase listeners (`onSnapshot`) provide real-time state synchronization for 
+    shared resources like notifications and campus status.
+
+**Routing Logic (Internal):**
+-   Instead of traditional browser routing (React Router), the app currently uses 
+    state-based view switching.
+-   The `Navigation` component controls the `activeTab` state.
+-   Conditional rendering displays specific "Hubs" based on the `activeTab` and 
+    `role`:
+    -   `DashboardHome`
+    -   `AcademicsHub`
+    -   `CampusLifeHub`
+    -   `StudentServices`
+    -   `ToolsHub`
+    -   `HigherAuthorityPanel`
+
+================================================================================
+6. DETAILED FEATURE REQUEST & IMPLEMENTATION
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1. Authentication Module
+--------------------------------------------------------------------------------
+The entry point of the application is the `LoginPage` component.
+-   **Functionality**:
+    -   Accepts Email and Password (simulated/actual).
+    -   Allows selection of Role (Student/Faculty/Admin) and Department.
+    -   Uses `signInAnonymously` for demo purposes or custom token integration.
+-   **Security**:
+    -   Validates input.
+    -   Redirects to the Dashboard upon successful handshake.
+
+--------------------------------------------------------------------------------
+6.2. Dashboard & Navigation
+--------------------------------------------------------------------------------
+Once logged in, the user is presented with a role-specific dashboard.
+-   **Sidebar/Navigation**:
+    -   A responsive navigation bar (`Navigation` component).
+    -   Tabs: Dashboard, Academics, Campus Life, Student Services, Tools, Admin (if applicable).
+    -   Quick access to User Profile and Logout.
+-   **Dashboard Home (`DashboardHome`)**:
+    -   **Notifications**: A scrolling feed of important announcements (`Notifications` component).
+    -   **Campus Status**: Live indicators for Library (Open/Closed), Labs (Busy/Free), and Bus location (`CampusStatus` component).
+    -   **Quick Stats**: Overview of pending tasks, upcoming exams, or new messages.
+
+--------------------------------------------------------------------------------
+6.3. Academic Module (`AcademicsHub`)
+--------------------------------------------------------------------------------
+This module focuses on the core learning experience.
+-   **Academic Results**:
+    -   View semester-wise results.
+    -   Visual indicators for Pass/Fail statuses.
+    -   Faculty can upload/edit results (`AcademicResults` component uses `addStudent`, `toggleStatus`).
+-   **Timetable**:
+    -   Weekly schedule view.
+    -   Highlights user's current class based on time/day.
+-   **Attendance (Planned)**:
+    -   Tracking daily and subject-wise attendance.
+-   **CGPA Calculator**:
+    -   A utility tool for students to predict their GPA based on current grades.
+-   **Resource Sharing**:
+    -   Faculty can upload notes, PDFs, or links.
+    -   Students can search and download these resources.
+    -   Implementation: `ResourceSharing` component with `shareResource` and `deleteResource` functions.
+
+--------------------------------------------------------------------------------
+6.4. Campus Life Module (`CampusLifeHub`)
+--------------------------------------------------------------------------------
+Designed to enhance the social and logistical aspects of campus life.
+-   **Campus Events**:
+    -   Calendar of upcoming seminars, workshops, and fests.
+    -   Admin can `createEvent` with date, title, and description.
+-   **Campus Polls**:
+    -   A democratic tool for student opinions.
+    -   Users can vote on active polls.
+    -   Real-time result visualization.
+    -   Logic: `CampusPolls` handles `vote` (incrementing counters) and `createPoll`.
+-   **Lost & Found**:
+    -   A digital board for reporting lost items.
+    -   Users can post images/descriptions of items found.
+    -   `LostAndFound` component manages the item feed.
+-   **Campus Marketplace**:
+    -   Peer-to-peer buying and selling (e.g., used books, drafting tools).
+    -   Users facilitate trades via contact info provided.
+
+--------------------------------------------------------------------------------
+6.5. Student Services Module (`StudentServices`)
+--------------------------------------------------------------------------------
+Administrative services digitized for ease of access.
+-   **Exam Seating Finder**:
+    -   Students enter their ID/Hall Ticket Number.
+    -   The system returns their specific Block, Room, and Seat Number.
+    -   Functionality to "Print Ticket".
+-   **Grievance Redressal**:
+    -   A sensitive module for reporting issues (Infrastructure, Academic, etc.).
+    -   Status tracking: Submitted -> In Progress -> Resolved.
+    -   Admin/Faculty can view and update the status of grievances.
+-   **Placement Hub**:
+    -   Job postings by the placement cell.
+    -   Interview experience sharing by seniors (`postExp`).
+    -   Crucial for final-year students.
+
+--------------------------------------------------------------------------------
+6.6. Utility & Tools (`ToolsHub`)
+--------------------------------------------------------------------------------
+Productivity tools integrated directly into the platform.
+-   **Focus Timer**:
+    -   A Pomodoro-style timer to aid study sessions.
+    -   Presets: 25min, 50min.
+    -   Visual countdown.
+-   **Library Check**:
+    -   Search specifically for book availability without visiting the library.
+-   **Personal Todo List**:
+    -   A private task manager for the user.
+    -   Stored locally or in Firestore per user.
+-   **Assignment Tracker**:
+    -   Kanban or list view of pending vs. completed assignments.
+
+--------------------------------------------------------------------------------
+6.7. High Authority & Administration
+--------------------------------------------------------------------------------
+Specialized controls for key stakeholders.
+-   **Student Lookup**:
+    -   Search any student by ID to view their full profile and history.
+-   **Broadcast System**:
+    -   Send notification alerts to all users or specific groups.
+-   **Data Management**:
+    -   Add/Edit Exam Seating data.
+    -   Update detailed Campus Statuses.
+
+================================================================================
+7. ARTIFICIAL INTELLIGENCE INTEGRATION
+================================================================================
+EdHub sets itself apart by integrating advanced AI capabilities.
+
+**Jarvis ChatBot**:
+-   A general-purpose assistant available globally via a floating action button or 
+    dedicated tab.
+-   Interacts with the Google Gemini API.
+-   Can answer queries about the campus, general knowledge, or help with navigation.
+
+**AI Study Buddy**:
+-   A specialized prompt context for academic assistance.
+-   Helps explain complex topics, summarize notes, or generate quizzes.
+-   Located within the Academics or Tools section.
+
+**Technical Implementation**:
+-   Function: `generateAIResponse(prompt, context)`
+-   API: `GoogleGenerativeAI` from `@google/generative-ai`.
+-   API Key Management: Secured securely (though currently exposed in client code for 
+    demo, advised to move to backend proxy for production).
+
+================================================================================
+8. DATABASE DESIGN (SCHEMA OVERVIEW - INFERRED)
+================================================================================
+The application utilizes Firestore with a collection-based structure under the 
+root artifact path `artifacts/{appId}/`.
+
+-   **Users Collection**
+    -   `uid` (string)
+    -   `role` (enum: "student", "faculty", "admin")
+    -   `dept` (string)
+    -   `name` (string)
+    -   `email` (string)
+
+-   **Public Data Collection (`public/data/`)**
+    -   `notifications`: Array of announcement objects.
+    -   `status`: Campus status objects.
+    -   `events`: List of upcoming event documents.
+    -   `polls`: Active poll documents with options and vote counts.
+    -   `jobs`: Placement job postings.
+
+-   **Interaction Collections**
+    -   `grievances`: Individual reports linked to user IDs.
+    -   `marketplace`: Item listings.
+    -   `lostFound`: Lost item reports.
+    -   `resource_sharing`: Academic files/links shared by faculty.
+
+-   **Academic Collections**
+    -   `results`: Student grade records.
+    -   `exams`: Exam schedules and seating plans.
+
+================================================================================
+9. SECURITY INTEGRATION
+================================================================================
+-   **Authentication State Persistence**: Firebase SDK handles session management.
+-   **Role-Based Rendering**: Components check `user.role` before rendering 
+    privileged actions (e.g., "Delete" buttons, "Post" forms).
+-   **Firestore Rules (Recommended)**:
+    -   Read access: Public for most collections; restricted for personal Grievances.
+    -   Write access: Strictly governed by Auth UID and Role claims.
+        -   Admins: Full Write.
+        -   Faculty: Write to Assignments, Resources, Results.
+        -   Students: Write to Grievances, Marketplace, Poll Votes.
+
+================================================================================
+10. UI/UX DESIGN SYSTEM
+================================================================================
+**Theme Engine**:
+-   Support for System Default, Light, and Dark modes.
+-   Class-based toggling (`dark` class on HTML root).
+-   Colors adapt automatically (e.g., `bg-white` vs `dark:bg-slate-900`).
+
+**Component Library (Custom)**:
+-   **DashboardCard**: Uniform container with hover effects and glassmorphism.
+-   **Modal**: reusable overlay for forms and detailed views.
+-   **LoadingSpinner**: Consistent loading state interaction.
+-   **Buttons & Inputs**: Standardized padding, focus rings, and transitions.
+
+**Accessibility**:
+-   High contrast text ratios.
+-   Clear iconography with labels.
+-   Keyboard navigable forms.
+
+================================================================================
+11. INSTALLATION & SETUP GUIDE
+================================================================================
+To set up the EdHub development environment locally:
+
+1.  **Prerequisites**:
+    -   Node.js (v18 or higher)
+    -   npm (v9 or higher)
+
+2.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/your-org/edhub.git
+    cd edhub
+    ```
+
+3.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
+    This will install React, Vite, Tailwind, Firebase, and other packages listed in 
+    `package.json`.
+
+4.  **Environment Configuration**:
+    -   Create a `.env` file in the root.
+    -   Add Firebase keys:
+        ```
+        VITE_FIREBASE_API_KEY=your_key
+        VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+        ...
+        VITE_GEMINI_API_KEY=your_gemini_key
+        ```
+
+5.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
+    Access the application at `http://localhost:5173`.
+
+6.  **Build for Production**:
+    ```bash
+    npm run build
+    ```
+    The output will be generated in the `dist/` folder.
+
+================================================================================
+12. FUTURE ROADMAP
+================================================================================
+The following features are planned for future phases (Phase 2 & 3):
+
+-   **Mobile Application**: Native React Native app reusing the same logic.
+-   **Payment Gateway**: Fee payments and cafeteria wallet integration.
+-   **LMS Features**: Complete Learning Management System with video lectures and 
+    automated grading.
+-   **Biometric Integration**: For library access and class attendance.
+-   **Alumni Network**: A dedicated portal for alumni connection and donations.
+-   **Multi-Language Support**: i18n implementation for regional languages.
+
+================================================================================
+13. COMPONENT REFERENCE API
+================================================================================
+This section provides technical specifications for key components to assist 
+contributing developers.
+
+**Shared Components**
+
+*   `LoadingSpinner`
+    *   **Usage**: Reusable spinner for async states.
+    *   **Props**: `size` (int, default 24), `className` (string).
+    *   **Behavior**: Rotates an SVG icon indefinitely.
+
+*   `ErrorDisplay`
+    *   **Usage**: Rendering catch-block errors in UI.
+    *   **Props**: `message` (string).
+    *   **Behavior**: Renders red pilled alert box.
+
+*   `Modal`
+    *   **Usage**: Critical for forms (Login, Add Item actions).
+    *   **Props**: `isOpen` (bool), `onClose` (func), `title` (string).
+    *   **Behavior**: Mounts via Portal (conceptually) or conditionally renders 
+        on top of z-index stack. Prevents background scroll.
+
+**Functional Modules**
+
+*   `ExamSeatingFinder`
+    *   **State**: `ticket` (Object: {name, id, block, room}).
+    *   **Key Function**: `handleSearch` queries the 'exams' collection.
+    *   **Output**: Renders a printable card div.
+
+*   `FocusTimer`
+    *   **State**: `timeLeft` (int: seconds), `isActive` (bool).
+    *   **Key Function**: `useEffect` interval decrements `timeLeft`.
+    *   **Features**: Audio notification on zero (if implemented), presets (25m).
+
+*   `CampusPolls`
+    *   **Data Structure**: Poll document contains `options` array: [{text: "", votes: 0}].
+    *   **Interaction**: User click updates specific array index in Firestore.
+    *   **Restriction**: One vote per user (enforced by local storage/db check).
+
+*   `ResourceSharing`
+    *   **Role Check**: Only Faculty/Admin can see "Upload" button.
+    *   **File Handling**: Currently stores links/text. File upload would require Storage.
+
+*   `AssignmentTracker`
+    *   **Workflow**: Faculty 'Creates' -> Student 'Submits' -> Status changes to 'Submitted'.
+    *   **Views**: Filtered by active user ID or Role.
+
+*   `JarvisChatBot`
+    *   **Integration**: Direct fetch call to Gemini API endpoint.
+    *   **Context**: Wraps user prompt in "You are a helpful assistant for EdHub..."
+    *   **UI**: Floating chat bubble that expands to full chat window.
+
+================================================================================
+14. TROUBLESHOOTING & FAQ
+================================================================================
+Common issues encountered during development and deployment coverage:
+
+**Q: White screen on startup?**
+A: Check the browser console. Often caused by missing Firebase config keys in `.env` 
+file. Ensure all `VITE_` variables are defined.
+
+**Q: Firestore permission denied?**
+A: Check `firestore.rules`. During dev, rules might be `allow read, write: if true;`, 
+but in production, they must be authenticated. If you are not logged in (even anonymously), 
+requests will fail.
+
+**Q: Tailwind styles not applying?**
+A: Ensure `postcss.config.js` and `tailwind.config.js` are present. Check if content 
+paths in `tailwind.config.js` include `./src/**/*.{js.jsx}`.
+
+**Q: AI Chatbot returns 400 Bad Request?**
+A: Your Gemini API Key might be invalid or has exceeded the free quota. Check Google 
+AI Studio dashboard.
+
+**Q: Icons are missing?**
+A: Verify `lucide-react` is installed. Attempt `npm install lucide-react`.
+
+================================================================================
+15. CONCLUSION
+================================================================================
+EdHub represents a significant leap forward in educational institute management. 
+By integrating diverse functions into a cohesive, user-friendly, and intelligent 
+platform, it not only simplifies administrative overhead but also enriches the 
+student journey. The solid technical foundation built on React and Firebase ensures 
+that EdHub is ready to scale and adapt to the evolving needs of modern education.
+
+This document identifies the robust architecture and thought process behind every 
+pixel of the EdHub interface.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
